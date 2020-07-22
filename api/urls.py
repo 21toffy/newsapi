@@ -1,10 +1,11 @@
 from django.urls import path
 
-from . import views
+from . import vanguard, punch
 
 app_name='api'
 
 urlpatterns = [
-    path('apis/vanguard/<str:category>', views.vanguard, name='punch'),
+    path('apis/vanguard/<str:category>', vanguard.vanguard, name='vanguard'),
+    path('apis/punch/<str:category>', punch.punch, name='punch'),
     
 ]
