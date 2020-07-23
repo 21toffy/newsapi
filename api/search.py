@@ -32,10 +32,10 @@ def search(request, searchterm):
     # saves page source
     orders_html = br.response().read()
 
+    orders_html2 = br2.response().read()
     #initializing bs4 for scraping
     soup = BeautifulSoup(orders_html,'html.parser')
     # saves page source
-    orders_html2 = br2.response().read()
 
     #initializing bs4 for scraping
     soup2 = BeautifulSoup(orders_html2,'html.parser')
