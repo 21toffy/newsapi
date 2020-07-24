@@ -18,7 +18,7 @@ SECRET_KEY = 'z5aipps42q3qr$w5u!j$(6+#)bf(@pw+cvmeg$=w7x!-xr$+!w'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['http://nigeriannewsapi.herokuapp.com','127.0.0.1']
+ALLOWED_HOSTS = ['nigeriannewsapi.herokuapp.com','http://nigeriannewsapi.herokuapp.com','127.0.0.1']
 
 
 # Application definition
