@@ -7,6 +7,7 @@ gitignore==0.0.8
 static3==0.7.0
 pytz==2019.2
 docopt==0.6.2
+django-cors-headers==3.4.0
 django-heroku==0.3.1
 psycopg2-binary==2.8.4
 six==1.14.0
