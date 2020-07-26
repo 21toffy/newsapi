@@ -33,6 +33,9 @@ INSTALLED_APPS = [
     'rest_framework',
     'api',
     'corsheaders',
+    'rest_framework.authtoken', # new!
+    'rest_auth', # new!
+    'users'
 
 ]
 
@@ -130,6 +133,7 @@ CORS_ORIGIN_WHITELIST = [
 'http://localhost:3000',
 'http://localhost:8000',
 'http://localhost:8080',
+# 'https://nigeriannewsapi.herokuapp.com/api/search/coronavirus',
 ]
 
 # To reconfigure the production database
