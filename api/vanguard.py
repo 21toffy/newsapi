@@ -1,12 +1,14 @@
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework import status
 from django.http import HttpResponseRedirect
 import mechanize
 from bs4 import BeautifulSoup
 from rest_framework.response import Response
 from collections import Counter
-
+from users.permissions import OnlyAPIPermission
 import random
+from django.contrib.auth.models import User as User
+
 
 br = mechanize.Browser()
 br.set_handle_robots(False)
@@ -22,10 +24,12 @@ br2.addheaders = [('User-agent', 'Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9
 from django.http import HttpResponse
 
 #Exceptions error 500 , 503 , Backend Error
+# @permission_classes((OnlyAPIPermission, ))
 @api_view(['GET'])
 def vanguard (request, category):
     vanguardlink="https://www.vanguardngr.com/category/{}/".format(category)
     vanguardlink2="https://www.vanguardngr.com/category/{}/page/2".format(category)
+    #mdm        
     # https://www.vanguardngr.com/category/politics/
     # https://www.vanguardngr.com/category/business/
     # https://www.vanguardngr.com/category/health/
