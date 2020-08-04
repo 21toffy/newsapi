@@ -13,6 +13,9 @@ from django.http import Http404
 from datetime import timezone, timedelta, datetime
 from rest_framework.throttling import UserRateThrottle
 
+
+
+
 br = mechanize.Browser()
 br.set_handle_robots(False)
 br.addheaders = [('User-agent', 'Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.0.1) Gecko/2008071615 Fedora/3.0.1-1.fc9 Firefox/3.0.1')]
@@ -24,13 +27,15 @@ br2.set_handle_robots(False)
 br2.addheaders = [('User-agent', 'Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.0.1) Gecko/2008071615 Fedora/3.0.1-1.fc9 Firefox/3.0.1')]
 
 
+
+
 # @throttle_classes([UserRateThrottle])
 from django.http import HttpResponse
 
 #Exceptions error 500 , 503 , Backend Error
 # @permission_classes((OnlyAPIPermission, ))
 @api_view(['GET'])
-def vanguard (request, category, apikey):
+def vcoronavirus (request, apikey):
        
     try:
         user_Key = Profile.objects.get(api_key=apikey)
@@ -45,15 +50,9 @@ def vanguard (request, category, apikey):
     currentuser.no_of_requests=currentuser.no_of_requests + 1
     currentuser.save()
     try:
-        vanguardlink="https://www.vanguardngr.com/category/{}/".format(category)
-        vanguardlink2="https://www.vanguardngr.com/category/{}/page/2".format(category)
-        #mdm        
-        # https://www.vanguardngr.com/category/politics/
-        # https://www.vanguardngr.com/category/business/
-        # https://www.vanguardngr.com/category/health/
-        # https://www.vanguardngr.com/category/entertainment/
-        # https://www.vanguardngr.com/category/technology/
-        # https://www.vanguardngr.com/category/sports/
+        vanguardlink="https://www.vanguardngr.com/category/coronavirus-updates/"
+        vanguardlink2="https://www.vanguardngr.com/category/coronavirus-updates/page/2/"
+
         br.open(vanguardlink)
         br2.open(vanguardlink2)
         orders_html = br.response().read()
@@ -226,9 +225,3 @@ def vanguard (request, category, apikey):
     except response.data['status_code'] == 404:
 
         return Response({"message": "Success!", "data": data}, status=status.HTTP_200_OK )
-
-
-
-
-
-

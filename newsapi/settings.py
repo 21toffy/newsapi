@@ -35,7 +35,8 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework.authtoken', # new!
     'rest_auth', # new!
-    'users'
+    'users',
+    'djcelery'
 
 ]
 
@@ -139,6 +140,29 @@ CORS_ORIGIN_WHITELIST = [
 'http://localhost:8080',
 # 'https://nigeriannewsapi.herokuapp.com/api/search/coronavirus',
 ]
+
+
+# REST_FRAMEWORK = {
+#     'DEFAULT_THROTTLE_CLASSES': [
+#         'rest_framework.throttling.AnonRateThrottle',
+#         'rest_framework.throttling.UserRateThrottle'
+#     ],
+#     'DEFAULT_THROTTLE_RATES': {
+#         'anon': '20/day',
+#         'user': '1/day'
+#     }
+# }
+
+
+# CELERY STUFF
+REDIS_HOST = 'localhost'
+REDIS_PORT = '6379'
+BROKER_URL = 'redis://' + REDIS_HOST + ':' + REDIS_PORT + '/0'
+BROKER_TRANSPORT_OPTIONS = {'visibility_timeout': 3600} 
+CELERY_RESULT_BACKEND = 'redis://' + REDIS_HOST + ':' + REDIS_PORT + '/0'
+CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
+
+
 
 # To reconfigure the production database
 import dj_database_url
