@@ -45,7 +45,7 @@ def vcoronavirus (request, apikey):
             
     currentuser = Profile.objects.get(user=request.user)
     print(currentuser)
-    if currentuser.no_of_requests>=5:
+    if currentuser.no_of_requests>=50:
         return Response ({"message": "you have exhausted all your requests for the day"}, status=status.HTTP_429_TOO_MANY_REQUESTS)
     currentuser.no_of_requests=currentuser.no_of_requests + 1
     currentuser.save()
@@ -222,6 +222,7 @@ def vcoronavirus (request, apikey):
             data=data1+data2        
             return Response ({"message": "Success!", "data": data}, status=status.HTTP_200_OK )
         return Response({"message": "Success!", "data": data}, status=status.HTTP_200_OK )
-    except response.data['status_code'] == 404:
-
-        return Response({"message": "Success!", "data": data}, status=status.HTTP_200_OK )
+    except Exception as e:
+        trace_back = traceback.format_exc()
+        message = str(e)+ " " + str(trace_back)
+        return Response({"message": "somekind of error! try again", "data": message}, status=status.HTTP_503_SERVICE_UNAVAILABLE )

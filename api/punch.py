@@ -7,6 +7,7 @@ from rest_framework.response import Response
 from collections import Counter
 import random
 
+from users.models import Profile 
 
 
 
@@ -21,7 +22,12 @@ br2.addheaders = [('User-agent', 'Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9
 
 
 @api_view(['GET'])
-def punch (request, category):
+def punch (request, category, apikey):
+    cate=["politics", 'business','news','entertainment', 'technology','sports'] 
+    if category not in cate:
+        data="invalid category entered in the query string parameter. fix or Read the docs"
+        return Response ({"message": data}, status=status.HTTP_400_BAD_REQUEST)
+        
     try:
         user_Key = Profile.objects.get(api_key=apikey)
     except Profile.DoesNotExist:
@@ -29,8 +35,7 @@ def punch (request, category):
         return Response ({"message": "Invalid credentials"}, status=status.HTTP_400_BAD_REQUEST)
             
     currentuser = Profile.objects.get(user=request.user)
-    print(currentuser)
-    if currentuser.no_of_requests>=5:
+    if currentuser.no_of_requests>=500:
         return Response ({"message": "you have exhausted all your requests for the day"}, status=status.HTTP_429_TOO_MANY_REQUESTS)
     currentuser.no_of_requests=currentuser.no_of_requests + 1
     currentuser.save()
@@ -199,8 +204,12 @@ def punch (request, category):
             for i in range(len(keys)):
                     data2.append({'id':_id2[i],'summary':summary2[i],'date':date2[i],'photo':largeimage2[i],'title':title2[i],'link':link2[i]})
             data=data1+data2
+            print("this went well")
             return Response ({"message": "Success!", "data": data}, status=status.HTTP_200_OK )
-    except response.data['status_code'] == 404:
-        return Response({"message": "Success!", "data": data}, status=status.HTTP_200_OK )
+        return Response ({"message": "Success!", "data": data}, status=status.HTTP_200_OK )
+    except Exception as e:
+        trace_back = traceback.format_exc()
+        message = str(e)+ " " + str(trace_back)
+        return Response({"message": "somekind of error! try again", "data": message}, status=status.HTTP_503_SERVICE_UNAVAILABLE )
     
     

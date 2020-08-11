@@ -27,33 +27,29 @@ br2.addheaders = [('User-agent', 'Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9
 # @throttle_classes([UserRateThrottle])
 from django.http import HttpResponse
 
-#Exceptions error 500 , 503 , Backend Error
-# @permission_classes((OnlyAPIPermission, ))
+
 @api_view(['GET'])
 def vanguard (request, category, apikey):
-       
+    cate=["politics", 'business','health', 'entertainment', 'technology','sports'] 
+    if category not in cate:
+        data="invalid category entered in the query string parameter. fix or Read the docs"
+        return Response ({"message": data}, status=status.HTTP_400_BAD_REQUEST)  
     try:
         user_Key = Profile.objects.get(api_key=apikey)
     except Profile.DoesNotExist:
-        data= "Your Api Key or username is Invalid. carefully check and fix!"
-        return Response ({"message": "Invalid credentials"}, status=status.HTTP_400_BAD_REQUEST)
+        data= "Your Api Key is bad. carefully check and fix!. or go to https:9janewsapi.herokuapp.com to get one"
+        return Response ({"message": data}, status=status.HTTP_400_BAD_REQUEST)
             
     currentuser = Profile.objects.get(user=request.user)
     print(currentuser)
-    if currentuser.no_of_requests>=5:
+    if currentuser.no_of_requests>=50:
         return Response ({"message": "you have exhausted all your requests for the day"}, status=status.HTTP_429_TOO_MANY_REQUESTS)
     currentuser.no_of_requests=currentuser.no_of_requests + 1
     currentuser.save()
     try:
         vanguardlink="https://www.vanguardngr.com/category/{}/".format(category)
         vanguardlink2="https://www.vanguardngr.com/category/{}/page/2".format(category)
-        #mdm        
-        # https://www.vanguardngr.com/category/politics/
-        # https://www.vanguardngr.com/category/business/
-        # https://www.vanguardngr.com/category/health/
-        # https://www.vanguardngr.com/category/entertainment/
-        # https://www.vanguardngr.com/category/technology/
-        # https://www.vanguardngr.com/category/sports/
+
         br.open(vanguardlink)
         br2.open(vanguardlink2)
         orders_html = br.response().read()
@@ -223,9 +219,11 @@ def vanguard (request, category, apikey):
             data=data1+data2        
             return Response ({"message": "Success!", "data": data}, status=status.HTTP_200_OK )
         return Response({"message": "Success!", "data": data}, status=status.HTTP_200_OK )
-    except response.data['status_code'] == 404:
 
-        return Response({"message": "Success!", "data": data}, status=status.HTTP_200_OK )
+    except Exception as e:
+        trace_back = traceback.format_exc()
+        message = str(e)+ " " + str(trace_back)
+        return Response({"message": "somekind of error! try again", "data": message}, status=status.HTTP_503_SERVICE_UNAVAILABLE )
 
 
 
