@@ -1,7 +1,7 @@
 
 
 import os
-import django_heroku 
+# import django_heroku 
 # import cloudinary
 import warnings
 warnings.filterwarnings("ignore", message="No directory at", module="whitenoise.base" )
@@ -36,7 +36,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken', # new!
     'rest_auth', # new!
     'users',
-    'djcelery'
+    # 'djcelery'
 
 ]
 
