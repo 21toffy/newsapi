@@ -146,6 +146,7 @@ CORS_ORIGIN_WHITELIST = [
 'http://localhost:3000',
 'http://localhost:8000',
 'https://9janewsapi.netlify.app',
+'http://9janewsapi.netlify.app',
 # 'https://nigeriannewsapi.herokuapp.com/api/search/coronavirus',
 ]
 
