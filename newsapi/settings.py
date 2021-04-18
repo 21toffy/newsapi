@@ -22,6 +22,8 @@ DEBUG = True
 ALLOWED_HOSTS = ['nigeriannewsapi.herokuapp.com','http://nigeriannewsapi.herokuapp.com','127.0.0.1']
 
 
+
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -143,7 +145,7 @@ CORS_ORIGIN_ALLOW_ALL = True
 CORS_ORIGIN_WHITELIST = [
 'http://localhost:3000',
 'http://localhost:8000',
-# 'http://localhost:8080',
+'https://9janewsapi.netlify.app',
 # 'https://nigeriannewsapi.herokuapp.com/api/search/coronavirus',
 ]
 
