@@ -4,7 +4,8 @@ from . import views
 app_name = 'users'
 
 urlpatterns = [
-    path('<str:username>', views.profile),
+    path('', views.profile, name="user_profile"),
+    
  
 
 ]

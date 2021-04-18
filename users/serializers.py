@@ -1,22 +1,22 @@
-from . models import Profile, Membership, UserMembership, Subscription
 
+from djoser.serializers import UserCreateSerializer
+from django.contrib.auth import get_user_model
 from rest_framework import serializers
-from django.contrib.auth.models import User
+
+from .models import User, Profile
+
+User = get_user_model()
 
 
+class UserCreateSerializer(UserCreateSerializer):
+  class Meta(UserCreateSerializer.Meta):
+    model = User
+    fields = ('id', 'email', 'name', 'password')
 
-class  UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = [
-            'username',
-            'id',
-            'email',
-        
-        ]
+
 
 class ProfileSerializer(serializers.ModelSerializer):
-    user = UserSerializer(many=False, read_only=True)
+    user = UserCreateSerializer(many=False, read_only=True)
     class Meta:
         model = Profile
         fields = [
@@ -31,28 +31,28 @@ class ProfileSerializer(serializers.ModelSerializer):
 
 
 
-class MembershipSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Membership
-        fields = [
-            'membership_type','donation'
-        ]
+# class MembershipSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = Membership
+#         fields = [
+#             'membership_type','donation'
+#         ]
 
-class UserMembershipSerializer(serializers.ModelSerializer):
-    user = UserSerializer(many=False, read_only=True)
-    Membership = MembershipSerializer(many=False, read_only=True)
-    class Meta:
-        model = UserMembership
-        fields = [
-           'Membership',
-           'user',
-           'membership'
-        ]
+# class UserMembershipSerializer(serializers.ModelSerializer):
+#     user = UserSerializer(many=False, read_only=True)
+#     Membership = MembershipSerializer(many=False, read_only=True)
+#     class Meta:
+#         model = UserMembership
+#         fields = [
+#            'Membership',
+#            'user',
+#            'membership'
+#         ]
 
 
-class SubscriptionSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Subscription
-        fields = [
-            'user_membership'
-        ]
+# class SubscriptionSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = Subscription
+#         fields = [
+#             'user_membership'
+#         ]

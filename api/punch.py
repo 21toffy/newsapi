@@ -1,11 +1,20 @@
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes, throttle_classes
 from rest_framework import status
 from django.http import HttpResponseRedirect
 import mechanize
 from bs4 import BeautifulSoup
 from rest_framework.response import Response
 from collections import Counter
+from users.permissions import OnlyAPIPermission
 import random
+from django.contrib.auth.models import User as User
+from users.models import Profile 
+from django.http import Http404
+from datetime import timezone, timedelta, datetime
+from rest_framework.throttling import UserRateThrottle
+ 
+import traceback
+import sys
 
 from users.models import Profile 
 
@@ -34,8 +43,8 @@ def punch (request, category, apikey):
         data= "Your Api Key or username is Invalid. carefully check and fix!"
         return Response ({"message": "Invalid credentials"}, status=status.HTTP_400_BAD_REQUEST)
             
-    currentuser = Profile.objects.get(user=request.user)
-    if currentuser.no_of_requests>=500:
+    currentuser = Profile.objects.get(api_key=apikey)
+    if currentuser.no_of_requests>=1000:
         return Response ({"message": "you have exhausted all your requests for the day"}, status=status.HTTP_429_TOO_MANY_REQUESTS)
     currentuser.no_of_requests=currentuser.no_of_requests + 1
     currentuser.save()
@@ -71,7 +80,7 @@ def punch (request, category, apikey):
 
         #initializing bs4 for scraping
         soup = BeautifulSoup(orders_html,'html.parser')
-
+        print(soup)
         #initializing bs4 for scraping
         soup2 = BeautifulSoup(orders_html2,'html.parser')
 
@@ -96,6 +105,8 @@ def punch (request, category, apikey):
 
         imagelinks = soup.find_all('figure', {'class': 'seg-image'})
         imagelinks2 = soup2.find_all('figure', {'class': 'seg-image'})
+        print(imagelinks)
+        print(imagelinks2)
 
 
 
@@ -188,12 +199,13 @@ def punch (request, category, apikey):
                 link2.append(hyper['href'])
 
 
-
+        print(link2)
 
 
         data1=[dict(zip(keys, i)) for i in zip(_id, summary, date, largeimage, title, link)]
         data2=[dict(zip(keys, i)) for i in zip(_id2, summary2, date2, largeimage2, title2, link2)]
         data=data1+data2
+        print(len(data), "..........................--------------------")
         if len(data)==0:
             
             data1=[]

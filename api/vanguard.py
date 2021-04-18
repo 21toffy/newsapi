@@ -13,6 +13,7 @@ from django.http import Http404
 from datetime import timezone, timedelta, datetime
 from rest_framework.throttling import UserRateThrottle
 
+
 br = mechanize.Browser()
 br.set_handle_robots(False)
 br.addheaders = [('User-agent', 'Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.0.1) Gecko/2008071615 Fedora/3.0.1-1.fc9 Firefox/3.0.1')]
@@ -29,6 +30,7 @@ from django.http import HttpResponse
 
 
 @api_view(['GET'])
+# @renderer_classes([JSONRenderer])
 def vanguard (request, category, apikey):
     cate=["politics", 'business','health', 'entertainment', 'technology','sports'] 
     if category not in cate:
@@ -157,8 +159,6 @@ def vanguard (request, category, apikey):
             date.append(timetravel.find(text=True))
 
         
-
-        
         for i in imagelinks2:
             d=i.find_all('img')
             for i in d:
@@ -219,7 +219,6 @@ def vanguard (request, category, apikey):
             data=data1+data2        
             return Response ({"message": "Success!", "data": data}, status=status.HTTP_200_OK )
         return Response({"message": "Success!", "data": data}, status=status.HTTP_200_OK )
-
     except Exception as e:
         trace_back = traceback.format_exc()
         message = str(e)+ " " + str(trace_back)
