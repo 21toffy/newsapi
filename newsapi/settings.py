@@ -139,6 +139,13 @@ STATIC_URL = '/static/'
 #     os.path.join(BASE_DIR, "build/static")
 # ]
 # STATICFILES_ROOT =os.path.join(BASE_DIR, "static")
+from corsheaders.defaults import default_headers
+
+CORS_ALLOW_HEADERS = default_headers + (
+    'Access-Control-Allow-Origin',
+)
+
+
 
 CORS_ORIGIN_ALLOW_ALL = True
 
