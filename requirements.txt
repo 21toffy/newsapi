@@ -1,11 +1,44 @@
-certifi==2020.12.5
-chardet==4.0.0
-colorclass==2.2.0
-docopt==0.6.2
-idna==2.10
-packaging==20.9
-pip-upgrader==1.4.15
-pyparsing==2.4.7
-requests==2.25.1
-terminaltables==3.1.0
-urllib3==1.26.3
+# Django Core (LTS)
+Django==4.2.8
+djangorestframework==3.14.0
+
+# Database
+psycopg2-binary==2.9.9
+dj-database-url==2.1.0
+
+# Authentication & Security
+djangorestframework-simplejwt==5.3.0
+cryptography==44.0.2
+
+# CORS & Security
+django-cors-headers==4.3.1
+
+# Environment Management
+python-decouple==3.8
+
+# Task Queue
+celery==5.3.4
+redis==5.0.1
+
+# Web Server
+gunicorn==21.2.0
+whitenoise==6.6.0
+
+# Web Scraping
+beautifulsoup4==4.12.2
+mechanize==0.4.9
+requests==2.31.0
+lxml==4.9.3
+
+# API Documentation
+drf-yasg==1.21.7
+
+# Data Validation
+pydantic==2.5.2
+
+# Development Tools (Optional)
+django-debug-toolbar==4.2.0
+
+# Testing (Optional)
+pytest==7.4.3
+pytest-django==4.7.0

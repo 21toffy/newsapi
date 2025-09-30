@@ -1,17 +1,11 @@
-from rest_framework.decorators import api_view, permission_classes, throttle_classes
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework import status
-from django.http import HttpResponseRedirect
 import mechanize
 from bs4 import BeautifulSoup
 from rest_framework.response import Response
-from collections import Counter
-from users.permissions import OnlyAPIPermission
 import random
-from django.contrib.auth.models import User as User
-from users.models import Profile 
-from django.http import Http404
-from datetime import timezone, timedelta, datetime
-from rest_framework.throttling import UserRateThrottle
+from users.models import APIKey
+import traceback
 
 
 br = mechanize.Browser()
@@ -29,25 +23,35 @@ br2.addheaders = [('User-agent', 'Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9
 from django.http import HttpResponse
 
 
+import re
+from django.utils.html import escape
+
 @api_view(['GET'])
-# @renderer_classes([JSONRenderer])
+@permission_classes([])  # Remove authentication requirement
 def vanguard (request, category, apikey):
-    cate=["politics", 'business','health', 'entertainment', 'technology','sports'] 
-    if category not in cate:
-        data="invalid category entered in the query string parameter. fix or Read the docs"
-        return Response ({"message": data}, status=status.HTTP_400_BAD_REQUEST)  
+    # Input validation and sanitization
+    if not apikey or not re.match(r'^[a-zA-Z0-9]{40}$', apikey):
+        return Response({"message": "Invalid API key format"}, status=status.HTTP_400_BAD_REQUEST)
+    
+    category = escape(category.lower().strip())
+    allowed_categories = ["politics", 'business','health', 'entertainment', 'technology','sports']
+    
+    if category not in allowed_categories:
+        return Response({
+            "message": "Invalid category. Allowed categories: " + ", ".join(allowed_categories)
+        }, status=status.HTTP_400_BAD_REQUEST)  
     try:
-        user_Key = Profile.objects.get(api_key=apikey)
-    except Profile.DoesNotExist:
-        data= "Your Api Key is bad. carefully check and fix!. or go to https:9janewsapi.herokuapp.com to get one"
-        return Response ({"message": data}, status=status.HTTP_400_BAD_REQUEST)
-            
-    currentuser = Profile.objects.get(user=request.user)
-    print(currentuser)
-    if currentuser.no_of_requests>=50:
-        return Response ({"message": "you have exhausted all your requests for the day"}, status=status.HTTP_429_TOO_MANY_REQUESTS)
-    currentuser.no_of_requests=currentuser.no_of_requests + 1
-    currentuser.save()
+        api_key_obj = APIKey.objects.get(key=apikey, is_active=True)
+    except APIKey.DoesNotExist:
+        return Response({
+            "message": "Invalid API key. Please check your key or get one at https://9janewsapi.netlify.app"
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+    # Check rate limits and increment usage
+    if not api_key_obj.increment_usage():
+        return Response({
+            "message": f"Daily limit of {api_key_obj.daily_limit} requests exceeded. Resets at midnight UTC."
+        }, status=status.HTTP_429_TOO_MANY_REQUESTS)
     try:
         vanguardlink="https://www.vanguardngr.com/category/{}/".format(category)
         vanguardlink2="https://www.vanguardngr.com/category/{}/page/2".format(category)
