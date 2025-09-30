@@ -1,17 +1,11 @@
-from rest_framework.decorators import api_view, permission_classes, throttle_classes
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework import status
-from django.http import HttpResponseRedirect
 import mechanize
 from bs4 import BeautifulSoup
 from rest_framework.response import Response
-from collections import Counter
-from users.permissions import OnlyAPIPermission
 import random
-from django.contrib.auth.models import User as User
-from users.models import Profile 
-from django.http import Http404
-from datetime import timezone, timedelta, datetime
-from rest_framework.throttling import UserRateThrottle
+from users.models import APIKey
+import traceback
 
 
 
@@ -33,22 +27,22 @@ br2.addheaders = [('User-agent', 'Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9
 from django.http import HttpResponse
 
 #Exceptions error 500 , 503 , Backend Error
-# @permission_classes((OnlyAPIPermission, ))
 @api_view(['GET'])
+@permission_classes([])  # Remove authentication requirement
 def vcoronavirus (request, apikey):
        
     try:
-        user_Key = Profile.objects.get(api_key=apikey)
-    except Profile.DoesNotExist:
-        data= "Your Api Key or username is Invalid. carefully check and fix!"
-        return Response ({"message": "Invalid credentials"}, status=status.HTTP_400_BAD_REQUEST)
-            
-    currentuser = Profile.objects.get(user=request.user)
-    print(currentuser)
-    if currentuser.no_of_requests>=50:
-        return Response ({"message": "you have exhausted all your requests for the day"}, status=status.HTTP_429_TOO_MANY_REQUESTS)
-    currentuser.no_of_requests=currentuser.no_of_requests + 1
-    currentuser.save()
+        api_key_obj = APIKey.objects.get(key=apikey, is_active=True)
+    except APIKey.DoesNotExist:
+        return Response({
+            "message": "Invalid API key. Please check your key or get one at https://9janewsapi.netlify.app"
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+    # Check rate limits and increment usage
+    if not api_key_obj.increment_usage():
+        return Response({
+            "message": f"Daily limit of {api_key_obj.daily_limit} requests exceeded. Resets at midnight UTC."
+        }, status=status.HTTP_429_TOO_MANY_REQUESTS)
     try:
         vanguardlink="https://www.vanguardngr.com/category/coronavirus-updates/"
         vanguardlink2="https://www.vanguardngr.com/category/coronavirus-updates/page/2/"

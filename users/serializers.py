@@ -1,58 +1,62 @@
-
-from djoser.serializers import UserCreateSerializer
-from django.contrib.auth import get_user_model
+"""
+Serializers for User and API Key models
+Clean, production-ready serializers
+"""
 from rest_framework import serializers
-
-from .models import User, Profile
+from django.contrib.auth import get_user_model
+from .models import APIKey, UsageLog
 
 User = get_user_model()
 
 
-class UserCreateSerializer(UserCreateSerializer):
-  class Meta(UserCreateSerializer.Meta):
-    model = User
-    fields = ('id', 'email', 'name', 'password')
-
-
-
-class ProfileSerializer(serializers.ModelSerializer):
-    user = UserCreateSerializer(many=False, read_only=True)
+class UserSerializer(serializers.ModelSerializer):
+    """Basic user serializer for profile information"""
+    
     class Meta:
-        model = Profile
-        fields = [
-            'pk',
-            'bio',
-            'api_key',
-            'no_of_requests',
-            'user'
-            ]
-        read_only_fields = ['pk', 'api_key']
+        model = User
+        fields = ('id', 'email', 'name', 'date_joined')
+        read_only_fields = ('id', 'date_joined')
 
 
+class APIKeySerializer(serializers.ModelSerializer):
+    """API Key serializer with usage information"""
+    user = UserSerializer(read_only=True)
+    remaining_requests = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = APIKey
+        fields = (
+            'key', 'is_active', 'created_at', 'last_used',
+            'daily_requests', 'daily_limit', 'total_requests',
+            'remaining_requests', 'user'
+        )
+        read_only_fields = (
+            'key', 'created_at', 'last_used', 'daily_requests', 
+            'total_requests', 'user'
+        )
+    
+    def get_remaining_requests(self, obj):
+        """Get remaining requests for today"""
+        return obj.get_remaining_requests()
 
 
-# class MembershipSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Membership
-#         fields = [
-#             'membership_type','donation'
-#         ]
-
-# class UserMembershipSerializer(serializers.ModelSerializer):
-#     user = UserSerializer(many=False, read_only=True)
-#     Membership = MembershipSerializer(many=False, read_only=True)
-#     class Meta:
-#         model = UserMembership
-#         fields = [
-#            'Membership',
-#            'user',
-#            'membership'
-#         ]
+class UsageStatsSerializer(serializers.Serializer):
+    """Serializer for usage statistics"""
+    daily_requests = serializers.IntegerField()
+    daily_limit = serializers.IntegerField()
+    remaining_requests = serializers.IntegerField()
+    total_requests = serializers.IntegerField()
+    last_used = serializers.DateTimeField()
 
 
-# class SubscriptionSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Subscription
-#         fields = [
-#             'user_membership'
-#         ]
+# Optional: Usage log serializer for analytics
+class UsageLogSerializer(serializers.ModelSerializer):
+    """Usage log serializer for detailed analytics"""
+    
+    class Meta:
+        model = UsageLog
+        fields = (
+            'endpoint', 'timestamp', 'ip_address', 
+            'user_agent', 'response_time_ms'
+        )
+        read_only_fields = ('timestamp',)

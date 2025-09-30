@@ -1,31 +1,51 @@
-
-
 import os
 from datetime import timedelta
-# import django_heroku 
-# import cloudinary
+import dj_database_url
+from decouple import config
 import warnings
-warnings.filterwarnings("ignore", message="No directory at", module="whitenoise.base" )
+
+warnings.filterwarnings("ignore", message="No directory at", module="whitenoise.base")
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = config('DEBUG', default=True, cast=bool)
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'z5aipps42q3qr$w5u!j$(6+#)bf(@pw+cvmeg$=w7x!-xr$+!w'
+SECRET_KEY = config('SECRET_KEY', default=None)
+if not SECRET_KEY:
+    if DEBUG:
+        SECRET_KEY = 'dev-key-only-for-development-never-use-in-production'
+    else:
+        raise ValueError("SECRET_KEY environment variable must be set in production")
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1,0.0.0.0').split(',')
 
-ALLOWED_HOSTS = ['nigeriannewsapi.herokuapp.com','http://nigeriannewsapi.herokuapp.com','127.0.0.1']
-
-
-
+# Security Settings
+if not DEBUG:
+    # HTTPS Settings
+    SECURE_SSL_REDIRECT = True
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    
+    # Security Headers
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_HSTS_SECONDS = 31536000  # 1 year
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    
+    # Session Security
+    SESSION_COOKIE_SECURE = True
+    SESSION_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SAMESITE = 'Strict'
+    
+    # CSRF Security
+    CSRF_COOKIE_SECURE = True
+    CSRF_COOKIE_HTTPONLY = True
+    CSRF_COOKIE_SAMESITE = 'Strict'
 
 # Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -33,21 +53,20 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'rest_framework',
-    'api',
-    'corsheaders',
-    'rest_framework.authtoken', # new!
-    'rest_auth', # new!
-    'users',
-    "djoser",
     
-    # 'djcelery'
-
+    # Third party apps
+    'rest_framework',
+    'rest_framework_simplejwt',
+    'corsheaders',
+    'drf_yasg',
+    
+    # Local apps
+    'api',
+    'users',
 ]
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
-
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -58,12 +77,15 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+if DEBUG:
+    INSTALLED_APPS.append('debug_toolbar')
+    MIDDLEWARE.append('debug_toolbar.middleware.DebugToolbarMiddleware')
+
 ROOT_URLCONF = 'newsapi.urls'
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        
         'DIRS': [],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -79,10 +101,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'newsapi.wsgi.application'
 
-
 # Database
-# https://docs.djangoproject.com/en/3.0/ref/settings/#databases
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -90,14 +109,11 @@ DATABASES = {
     }
 }
 
-# REST_FRAMEWORK = {
-#     'DEFAULT_PERMISSION_CLASSES': ('rest_framework.permissions.AllowAny',),
-#     'PAGINATE_BY': 10
-# }
+# Override with DATABASE_URL if provided
+if config('DATABASE_URL', default=None):
+    DATABASES['default'] = dj_database_url.parse(config('DATABASE_URL'))
 
 # Password validation
-# https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
-
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -113,135 +129,102 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
-# https://docs.djangoproject.com/en/3.0/topics/i18n/
-
 LANGUAGE_CODE = 'en-us'
-
 TIME_ZONE = 'UTC'
-
 USE_I18N = True
-
 USE_L10N = True
-
 USE_TZ = True
+
+# Custom User Model
 AUTH_USER_MODEL = "users.User"
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/3.0/howto/static-files/
+# Default primary key field type
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# Static files (CSS, JavaScript, Images)
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_URL = '/static/'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-STATIC_URL = '/static/'
-# STATICFILES_DIRS = [
-#     os.path.join(BASE_DIR, "build/static")
-# ]
-# STATICFILES_ROOT =os.path.join(BASE_DIR, "static")
-from corsheaders.defaults import default_headers
+# CORS Settings
+CORS_ALLOW_ALL_ORIGINS = DEBUG  # Only allow all origins in development
+CORS_ALLOWED_ORIGINS = config(
+    'CORS_ORIGIN_WHITELIST', 
+    default='https://9janewsapi.com.ng'
+).split(',')
 
-CORS_ALLOW_HEADERS = default_headers + (
-    'Access-Control-Allow-Origin',
-)
-
-
-
-CORS_ORIGIN_ALLOW_ALL = True
-
-CORS_ORIGIN_WHITELIST = [
-'http://localhost:3000',
-'http://localhost:8000',
-'https://9janewsapi.netlify.app',
-'http://9janewsapi.netlify.app',
-'9janewsapi.netlify.app',
-'www.9janewsapi.netlify.app',
-# 'https://nigeriannewsapi.herokuapp.com/api/search/coronavirus',
-]
-
-
-#REST FRAMEWORK SETTINGS
+# REST Framework Settings
 REST_FRAMEWORK = {
-    # 'DEFAULT_PERMISSION_CLASSES': (
-    #     'rest_framework.permissions.IsAuthenticated',
-    # ),
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny',
+    ],
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',
     ],
-    'DEFAULT_AUTHENTICATION_CLASSES': (
+    'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ),
-}
-
-DOMAIN = ('9janewsapi.netlify.app') #example.com
-SITE_NAME = ('9ja news api') #Example
-
-#DJANGORESTFRAMEWORK-SIMPLEJWT SETTINGS
-SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME":timedelta(minutes=6000),
-    "REFRESH_TOKEN_LIFETIME":timedelta(days=1),
-   'AUTH_HEADER_TYPES': ('JWT',),
-}
-
-
-
-#DJOSER SETTINGS
-DJOSER = {
-    'LOGIN_FIELD': 'email',
-    'USER_CREATE_PASSWORD_RETYPE': True,
-    'USERNAME_CHANGED_EMAIL_CONFIRMATION': True,
-    'PASSWORD_CHANGED_EMAIL_CONFIRMATION': True,
-    'SEND_CONFIRMATION_EMAIL': True,
-    'SET_USERNAME_RETYPE': True,
-    'SET_PASSWORD_RETYPE': True,
-    'PASSWORD_RESET_CONFIRM_URL': 'password/reset/confirm/{uid}/{token}',
-    'EMAIL_RESET_CONFIRM_URL': 'email/reset/confirm/{uid}/{token}',
-    'ACTIVATION_URL': 'activate/{uid}/{token}',
-    'SEND_ACTIVATION_EMAIL':True,
-    'SERIALIZERS': {
-        'user_create': 'users.serializers.UserCreateSerializer',
-        'user': 'users.serializers.UserCreateSerializer',
-        'user_create': 'users.serializers.UserDeleteSerializer',
-
+    ],
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '100/hour',
+        'user': '1000/day',
     }
 }
 
+# Site Configuration
+DOMAIN = config('DOMAIN', default='9janewsapi.com.ng')
+SITE_NAME = config('SITE_NAME', default='9ja News API')
 
+# JWT Settings
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    'AUTH_HEADER_TYPES': ('Bearer',),
+}
 
+# Celery Configuration
+REDIS_URL = config('REDIS_URL', default='redis://localhost:6379/0')
+CELERY_BROKER_URL = REDIS_URL
+CELERY_RESULT_BACKEND = REDIS_URL
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = TIME_ZONE
 
-# REST_FRAMEWORK = {
-#     'DEFAULT_THROTTLE_CLASSES': [
-#         'rest_framework.throttling.AnonRateThrottle',
-#         'rest_framework.throttling.UserRateThrottle'
-#     ],
-#     'DEFAULT_THROTTLE_RATES': {
-#         'anon': '20/day',
-#         'user': '1/day'
-#     }
-# }
+# Email Configuration
+EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.console.EmailBackend')
+EMAIL_HOST = config('EMAIL_HOST', default='')
+EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
+EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
+EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
 
+# Swagger/OpenAPI Settings
+SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': {
+        'Bearer': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header'
+        }
+    },
+    'USE_SESSION_AUTH': False,
+    'JSON_EDITOR': True,
+    'SUPPORTED_SUBMIT_METHODS': [
+        'get',
+        'post',
+        'put',
+        'delete',
+        'patch'
+    ],
+}
 
-# CELERY STUFF
-REDIS_HOST = 'localhost'
-REDIS_PORT = '6379'
-BROKER_URL = 'redis://' + REDIS_HOST + ':' + REDIS_PORT + '/0'
-BROKER_TRANSPORT_OPTIONS = {'visibility_timeout': 3600} 
-CELERY_RESULT_BACKEND = 'redis://' + REDIS_HOST + ':' + REDIS_PORT + '/0'
-CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
-
-EMAIL_BACKEND="django.core.mail.backends.smtp.EmailBackend"
-
-EMAIL_HOST = 'smtp.mailtrap.io'
-EMAIL_HOST_USER = 'a24aab299dbe3e'
-EMAIL_HOST_PASSWORD = '29932bcf6f72cd'
-EMAIL_PORT = '2525'
-EMAIL_USE_TLS= True
-
-
-
-# To reconfigure the production database
-import dj_database_url
-
-prod_db  =  dj_database_url.config(conn_max_age=500)
-
-DATABASES['default'].update(prod_db)
+# Debug Toolbar (Development only)
+if DEBUG:
+    INTERNAL_IPS = [
+        '127.0.0.1',
+        'localhost',
+    ]
