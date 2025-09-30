@@ -1,5 +1,5 @@
 # Django Core (LTS)
-Django==4.2.8
+Django==4.2.24
 djangorestframework==3.14.0
 
 # Database
