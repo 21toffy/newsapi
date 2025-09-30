@@ -21,7 +21,7 @@ celery==5.3.4
 redis==5.0.1
 
 # Web Server
-gunicorn==21.2.0
+gunicorn==22.0.0
 whitenoise==6.6.0
 
 # Web Scraping
